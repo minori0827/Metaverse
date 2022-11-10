@@ -26,34 +26,41 @@ public class PlayerController : MonoBehaviour
         float horizontalKey = Input.GetAxis("Horizontal");
         float verticalKey = Input.GetAxis("Vertical");
 
-        float xDirection = 0;
-        float zDirection = 0;
-        float xSpeed = 0;
-        float zSpeed = 0;
+        float horizontalDirection = 0; //左右の移動方向
+        float verticalDirection = 0; //前後の移動方向
+        float horizontalSpeed = 0; //左右の移動速度
+        float verticalSpeed = 0; //前後の移動速度
 
         if (Input.GetKey(KeyCode.W)) //奥移動
         {
-            zDirection = 1;
+            verticalDirection = 1;
         }
         else if (Input.GetKey(KeyCode.S)) //手前移動
         {
-            zDirection = -1;
+            verticalDirection  = -1;
         }
 
         if (Input.GetKey(KeyCode.D)) //右移動
         {
-            xDirection = 1;
+            horizontalDirection = 1;
         }
         else if (Input.GetKey(KeyCode.A)) //左移動
         {
-            xDirection = -1;
+            horizontalDirection = -1;
         }
 
-        if (xDirection != 0 || zDirection != 0)
+        if (verticalDirection != 0 || horizontalDirection != 0)
         {
-            xSpeed = speed * xDirection / Mathf.Sqrt(Mathf.Pow(xDirection, 2) + Mathf.Pow(zDirection, 2));
-            zSpeed = speed * zDirection / Mathf.Sqrt(Mathf.Pow(xDirection, 2) + Mathf.Pow(zDirection, 2));
+            verticalSpeed = speed * verticalDirection / Mathf.Sqrt(Mathf.Pow(verticalDirection, 2)
+                                + Mathf.Pow(horizontalDirection, 2));
+            horizontalSpeed = speed * horizontalDirection / Mathf.Sqrt(Mathf.Pow(verticalDirection, 2)
+                                + Mathf.Pow(horizontalDirection, 2));
         }
+        
+        float xSpeed = verticalSpeed * Mathf.Sin(cameraParent.eulerAngles.y / 180 * Mathf.PI)
+                        + horizontalSpeed * Mathf.Cos(cameraParent.eulerAngles.y / 180 * Mathf.PI); //x方向の移動速度
+        float zSpeed = verticalSpeed * Mathf.Cos(cameraParent.eulerAngles.y / 180 * Mathf.PI)
+                        + horizontalSpeed * Mathf.Sin(-1 * cameraParent.eulerAngles.y / 180 * Mathf.PI);　//z方向の移動速度
 
         rb.velocity = new Vector3(xSpeed, 0, zSpeed);
     }
