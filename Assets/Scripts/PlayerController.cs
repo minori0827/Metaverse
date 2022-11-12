@@ -4,15 +4,17 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    [Header("ˆÚ“®‘¬“x")] public float speed;
-    [Header("ƒJƒƒ‰‘¬“x")] public float cameraSpeed;
-    [Header("ƒJƒƒ‰")] public Transform cameraParent;
+    [Header("è‡ªã‚­ãƒ£ãƒ©")] public GameObject myCharacter;
+    [Header("ç§»å‹•é€Ÿåº¦")] public float speed;
+    [Header("ã‚«ãƒ¡ãƒ©å›è»¢é€Ÿåº¦")] public float cameraSpeed;
 
+    private Transform cameraParent;
     private Rigidbody rb;
 
     void Start()
     {
-        rb = GetComponent<Rigidbody>();
+        rb = myCharacter.GetComponent<Rigidbody>();
+        cameraParent = myCharacter.transform.Find("CameraParent");
     }
 
     void Update()
@@ -23,28 +25,25 @@ public class PlayerController : MonoBehaviour
 
     void Movement()
     {
-        float horizontalKey = Input.GetAxis("Horizontal");
-        float verticalKey = Input.GetAxis("Vertical");
+        float horizontalDirection = 0; //å‰å¾Œã®ç§»å‹•æ–¹æ³•
+        float verticalDirection = 0; //å·¦å³ã®ç§»å‹•æ–¹æ³•
+        float horizontalSpeed = 0; //å‰å¾Œã®ç§»å‹•é€Ÿåº¦
+        float verticalSpeed = 0; //å·¦å³ã®ç§»å‹•é€Ÿåº¦
 
-        float horizontalDirection = 0; //¶‰E‚ÌˆÚ“®•ûŒü
-        float verticalDirection = 0; //‘OŒã‚ÌˆÚ“®•ûŒü
-        float horizontalSpeed = 0; //¶‰E‚ÌˆÚ“®‘¬“x
-        float verticalSpeed = 0; //‘OŒã‚ÌˆÚ“®‘¬“x
-
-        if (Input.GetKey(KeyCode.W)) //‰œˆÚ“®
+        if (Input.GetKey(KeyCode.W)) //å¥¥ç§»å‹•
         {
             verticalDirection = 1;
         }
-        else if (Input.GetKey(KeyCode.S)) //è‘OˆÚ“®
+        else if (Input.GetKey(KeyCode.S)) //æ‰‹å‰ç§»å‹•
         {
             verticalDirection  = -1;
         }
 
-        if (Input.GetKey(KeyCode.D)) //‰EˆÚ“®
+        if (Input.GetKey(KeyCode.D)) //å³ç§»å‹•
         {
             horizontalDirection = 1;
         }
-        else if (Input.GetKey(KeyCode.A)) //¶ˆÚ“®
+        else if (Input.GetKey(KeyCode.A)) //å·¦ç§»å‹•
         {
             horizontalDirection = -1;
         }
@@ -58,9 +57,9 @@ public class PlayerController : MonoBehaviour
         }
         
         float xSpeed = verticalSpeed * Mathf.Sin(cameraParent.eulerAngles.y / 180 * Mathf.PI)
-                        + horizontalSpeed * Mathf.Cos(cameraParent.eulerAngles.y / 180 * Mathf.PI); //x•ûŒü‚ÌˆÚ“®‘¬“x
+                        + horizontalSpeed * Mathf.Cos(cameraParent.eulerAngles.y / 180 * Mathf.PI); //xæ–¹å‘ç§»å‹•
         float zSpeed = verticalSpeed * Mathf.Cos(cameraParent.eulerAngles.y / 180 * Mathf.PI)
-                        + horizontalSpeed * Mathf.Sin(-1 * cameraParent.eulerAngles.y / 180 * Mathf.PI);@//z•ûŒü‚ÌˆÚ“®‘¬“x
+                        + horizontalSpeed * Mathf.Sin(-1 * cameraParent.eulerAngles.y / 180 * Mathf.PI); //zæ–¹å‘ç§»å‹•
 
         rb.velocity = new Vector3(xSpeed, 0, zSpeed);
     }
@@ -68,11 +67,11 @@ public class PlayerController : MonoBehaviour
     void CameraMove()
     {
         Vector3 eulerAngles = cameraParent.eulerAngles;
-        if (Input.GetKey(KeyCode.E)) //ƒJƒƒ‰‰EˆÚ“®
+        if (Input.GetKey(KeyCode.E)) //ã‚«ãƒ¡ãƒ©å³å›è»¢
         {
             eulerAngles.y -= cameraSpeed;
         }
-        else if (Input.GetKey(KeyCode.Q)) //ƒJƒƒ‰¶ˆÚ“®
+        else if (Input.GetKey(KeyCode.Q)) //ã‚«ãƒ¡ãƒ©å·¦å›è»¢
         {
             eulerAngles.y += cameraSpeed;
         }
