@@ -6,18 +6,32 @@ public class PlayerController : MonoBehaviour
 {
     [Header("自キャラ")] public GameObject myCharacter;
     [Header("移動速度")] public float speed;
+    [Header("ジャンプ速度")] public float jumpSpeed;
     [Header("カメラ回転速度")] public float cameraSpeed;
+    [Header("接地判定")] public GroundCheck ground;
 
-    private Transform cameraParent;
-    private Rigidbody rb;
+    private Transform cameraParent; //カメラ位置
+    private Transform body; //プレイヤーのオブジェクト
+    private Rigidbody rb; //プレイヤーの当たり判定
+    private float xSpeed = 0; //x軸方向の移動速度
+    private float ySpeed = 0; //y軸方向の移動速度
+    private float zSpeed = 0; //z軸方向の移動速度
+    private float angleMovableTime = 0.05f; //プレイヤーの向きを変えるのに必要な時間
+    private bool isGround = false; //接地判定
+    private bool isJump = false; //ジャンプ中かどうか
+    private float jumpTime = 0; //ジャンプしてからの時間
+    private float jumpableTime = 2; //元の落下速度に戻るまでの時間
+
 
     void Start()
     {
         rb = myCharacter.GetComponent<Rigidbody>();
         cameraParent = myCharacter.transform.Find("CameraParent");
+        body = myCharacter.transform.Find("Body");
+        ySpeed = -jumpSpeed;
     }
 
-    void Update()
+    void FixedUpdate()
     {
         Movement();
         CameraMove();
@@ -25,6 +39,8 @@ public class PlayerController : MonoBehaviour
 
     void Movement()
     {
+        isGround = ground.IsGround();
+
         float horizontalDirection = 0; //前後の移動方法
         float verticalDirection = 0; //左右の移動方法
         float horizontalSpeed = 0; //前後の移動速度
@@ -36,7 +52,7 @@ public class PlayerController : MonoBehaviour
         }
         else if (Input.GetKey(KeyCode.S)) //手前移動
         {
-            verticalDirection  = -1;
+            verticalDirection = -1;
         }
 
         if (Input.GetKey(KeyCode.D)) //右移動
@@ -55,13 +71,57 @@ public class PlayerController : MonoBehaviour
             horizontalSpeed = speed * horizontalDirection / Mathf.Sqrt(Mathf.Pow(verticalDirection, 2)
                                 + Mathf.Pow(horizontalDirection, 2));
         }
-        
-        float xSpeed = verticalSpeed * Mathf.Sin(cameraParent.eulerAngles.y / 180 * Mathf.PI)
-                        + horizontalSpeed * Mathf.Cos(cameraParent.eulerAngles.y / 180 * Mathf.PI); //x方向移動
-        float zSpeed = verticalSpeed * Mathf.Cos(cameraParent.eulerAngles.y / 180 * Mathf.PI)
-                        + horizontalSpeed * Mathf.Sin(-1 * cameraParent.eulerAngles.y / 180 * Mathf.PI); //z方向移動
 
-        rb.velocity = new Vector3(xSpeed, 0, zSpeed);
+        float xSpeedBuffer = verticalSpeed * Mathf.Sin(cameraParent.eulerAngles.y / 180 * Mathf.PI)
+                        + horizontalSpeed * Mathf.Cos(cameraParent.eulerAngles.y / 180 * Mathf.PI); //x軸方向の移動速度仮置き
+        float zSpeedBuffer = verticalSpeed * Mathf.Cos(cameraParent.eulerAngles.y / 180 * Mathf.PI)
+                        + horizontalSpeed * Mathf.Sin(-1 * cameraParent.eulerAngles.y / 180 * Mathf.PI); //z軸方向の移動速度仮置き
+
+        if (xSpeedBuffer != xSpeed || zSpeedBuffer != zSpeed)
+        {
+            Invoke("AngleMove", angleMovableTime);
+        }
+
+        if (horizontalDirection == 0 && verticalDirection == 0)
+        {
+            CancelInvoke("AngleMove");
+        }
+
+        xSpeed = xSpeedBuffer;
+        zSpeed = zSpeedBuffer;
+
+
+        if (isGround)
+        {
+            jumpTime = 0;
+            ySpeed = -jumpSpeed;
+            isJump = false;
+            if (Input.GetKey(KeyCode.Space)) //ジャンプ
+            {
+                isJump = true;
+            }
+        }
+
+        if (isJump)
+        {
+            jumpTime += Time.deltaTime;
+            if (jumpableTime > jumpTime)
+            {
+                ySpeed = jumpSpeed * Mathf.Cos(jumpTime / jumpableTime * Mathf.PI);
+            }
+            else
+            {
+                ySpeed = -jumpSpeed;
+            }
+        }
+
+        rb.velocity = new Vector3(xSpeed, ySpeed, zSpeed); //移動処理
+    }
+    void AngleMove()
+    {
+        Vector3 eulerAngles = body.eulerAngles;
+        eulerAngles.y = Mathf.Atan2(xSpeed, zSpeed) * Mathf.Rad2Deg;
+        body.eulerAngles = eulerAngles; //プレイヤーの向きの処理
     }
 
     void CameraMove()
@@ -78,3 +138,4 @@ public class PlayerController : MonoBehaviour
         cameraParent.eulerAngles = eulerAngles;
     }
 }
+
