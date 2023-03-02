@@ -12,16 +12,15 @@ public class AnotherController : MonoBehaviour
 
     void Start()
     {
-        rb = myCharacter.GetComponent<Rigidbody>();
     }
 
     void Update()
     {
-        Movement();
+
     }
 
-    void Movement()
+    public void Movement(float x, float y, float z)
     {
-        rb.velocity = new Vector3(0, 0, 0);
+        myCharacter.transform.position = new Vector3(x, y, z);
     }
 }
